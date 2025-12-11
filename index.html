@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Eco Elétrica - Field Service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+      body {
+        overscroll-behavior-y: contain;
+      }
+      /* Custom Scrollbar for Webkit browsers */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: hsl(var(--muted));
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--muted-foreground));
+      }
+      
+      .map-point-marker {
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      @layer base {
+        :root {
+            --background: 220 14.3% 95.9%; /* Lighter grey for page background */
+            --foreground: 224 71.4% 4.1%;
+            --card: 0 0% 100%; /* White for cards and inputs */
+            --card-foreground: 224 71.4% 4.1%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 224 71.4% 4.1%;
+            --primary: 211 100% 26%; /* Eco Blue */
+            --primary-foreground: 355.7 100% 97.3%;
+            --secondary: 149 100% 27%; /* Eco Green */
+            --secondary-foreground: 355.7 100% 97.3%;
+            --muted: 220 14.3% 95.9%;
+            --muted-foreground: 220 8.9% 46.1%;
+            --accent: 216 12.2% 83.9%;
+            --accent-foreground: 224 71.4% 4.1%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 355.7 100% 97.3%;
+            --border: 220 13% 91%;
+            --input: 220 13% 91%;
+            --ring: 211 100% 26%;
+            --radius: 0.75rem;
+        }
+
+        .dark {
+            --background: 224 71.4% 4.1%; /* Very dark blue for page background */
+            --foreground: 210 20% 98%;
+            --card: 215 27.9% 16.9%; /* Dark grey for cards and inputs */
+            --card-foreground: 210 20% 98%;
+            --popover: 215 27.9% 16.9%;
+            --popover-foreground: 210 20% 98%;
+            --primary: 211 100% 40%;
+            --primary-foreground: 355.7 100% 97.3%;
+            --secondary: 149 100% 35%;
+            --secondary-foreground: 355.7 100% 97.3%;
+            --muted: 215 27.9% 16.9%;
+            --muted-foreground: 217.9 10.6% 64.9%;
+            --accent: 215 27.9% 16.9%;
+            --accent-foreground: 210 20% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 355.7 100% 97.3%;
+            --border: 215 20% 25%; /* Slightly lighter border */
+            --input: 215 20% 25%;
+            --ring: 211 100% 40%;
+        }
+      }
+
+      @layer components {
+        .btn {
+            @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background;
+        }
+        .btn-primary {
+            @apply bg-primary text-primary-foreground hover:bg-primary/90;
+        }
+        .btn-muted {
+            @apply bg-muted text-muted-foreground hover:bg-muted/80;
+        }
+        .input {
+           @apply flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+        }
+      }
+    </style>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            border: 'hsl(var(--border))',
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
+            background: 'hsl(var(--background))',
+            foreground: 'hsl(var(--foreground))',
+            primary: {
+              DEFAULT: 'hsl(var(--primary))',
+              foreground: 'hsl(var(--primary-foreground))',
+            },
+            secondary: {
+              DEFAULT: 'hsl(var(--secondary))',
+              foreground: 'hsl(var(--secondary-foreground))',
+            },
+            destructive: {
+              DEFAULT: 'hsl(var(--destructive))',
+              foreground: 'hsl(var(--destructive-foreground))',
+            },
+            muted: {
+              DEFAULT: 'hsl(var(--muted))',
+              foreground: 'hsl(var(--muted-foreground))',
+            },
+            accent: {
+              DEFAULT: 'hsl(var(--accent))',
+              foreground: 'hsl(var(--accent-foreground))',
+            },
+            card: {
+              DEFAULT: 'hsl(var(--card))',
+              foreground: 'hsl(var(--card-foreground))',
+            }
+          },
+          borderRadius: {
+            lg: `var(--radius)`,
+            md: `calc(var(--radius) - 2px)`,
+            sm: 'calc(var(--radius) - 4px)',
+          },
+        },
+      },
+    }
+  </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
+    "react/": "https://esm.sh/react@^19.2.1/",
+    "clsx": "https://esm.sh/clsx@^2.1.1",
+    "tailwind-merge": "https://esm.sh/tailwind-merge@^3.4.0",
+    "immer": "https://esm.sh/immer@^11.0.1",
+    "date-fns": "https://esm.sh/date-fns@^4.1.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.559.0",
+    "date-fns/": "https://esm.sh/date-fns@^4.1.0/",
+    "react-leaflet": "https://esm.sh/react-leaflet@^5.0.0",
+    "leaflet": "https://esm.sh/leaflet@^1.9.4"
+  }
+}
+</script>
+</head>
+<body class="bg-background text-foreground">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>

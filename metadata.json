@@ -1,0 +1,8 @@
+{
+  "name": "Ecoapp",
+  "description": "A mobile-first application for field service teams to manage shifts, schedules, and work execution, with full offline capabilities.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
